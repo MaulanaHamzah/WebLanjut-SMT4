@@ -20,7 +20,7 @@
                         <button type="submit">Delete</button> <!-- Membuat tombol untuk menghapus item -->
                     </form>
                 </li>
-            @endforeach
+            @endforeach <!-- Akhir dari perulangan untuk menampilkan data item -->
         </ul>
     </body>
 </html>
