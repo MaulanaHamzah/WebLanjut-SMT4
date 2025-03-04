@@ -236,3 +236,23 @@ method ubah_simpan seperti gambar di bawah ini
 20. Simpan kode program Langkah 18 dan 19. Kemudian jalankan pada browser dan klik
 tombol hapus, kemudian amati apa yang terjadi dan beri penjelasan dalam laporan
 21. Laporkan hasil Praktikum-2.6 ini dan commit perubahan pada git
+
+#### Praktikum 2.7 – Relationships
+1. Buka file model pada UserModel.php dan tambahkan scritpnya menjadi seperti di bawah
+ini
+2. Buka file controller pada UserController.php dan ubah method script menjadi seperti
+di bawah ini
+3. Simpan kode program Langkah 2. Kemudian jalankan link pada browser, kemudian
+amati apa yang terjadi dan beri penjelasan dalam laporan
+
+<img src="image/prak2.7-3.png">
+
+4. Buka file controller pada UserController.php dan ubah method script menjadi seperti
+di bawah ini
+5. Buka file view pada user.blade.php dan ubah script menjadi seperti di bawah ini
+6. Simpan kode program Langkah 4 dan 5. Kemudian jalankan link pada browser,
+kemudian amati apa yang terjadi dan beri penjelasan dalam laporan
+
+<img src="image/prak2.7-6.png">
+
+7. Laporkan hasil Praktikum-2.7 ini dan commit perubahan pada git.
