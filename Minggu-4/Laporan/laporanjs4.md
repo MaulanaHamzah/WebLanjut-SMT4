@@ -171,3 +171,68 @@ terjadi dan beri penjelasan dalam laporan
 <img src="image/prak2.3-1.png">
 
 5. Laporkan hasil Praktikum-2.5 ini dan commit perubahan pada git.
+
+#### Praktikum 2.6 – Create, Read, Update, Delete (CRUD)
+1. Buka file view pada user.blade.php dan buat scritpnya menjadi seperti di bawah ini
+2. Buka file controller pada UserController.php dan buat scriptnya untuk read menjadi
+seperti di bawah ini
+3. Simpan kode program Langkah 1 dan 2. Kemudian jalankan pada browser dan amati
+apa yang terjadi dan beri penjelasan dalam laporan
+
+<img src="image/prak2.6-3.png">
+
+4. Langkah berikutnya membuat create atau tambah data user dengan cara bikin file baru
+pada view dengan nama user_tambah.blade.php dan buat scriptnya menjadi seperti di
+bawah ini
+5. Tambahkan script pada routes dengan nama file web.php. Tambahkan seperti gambar di
+bawah ini
+6. Tambahkan script pada controller dengan nama file UserController.php. Tambahkan
+script dalam class dan buat method baru dengan nama tambah dan diletakan di bawah
+method index seperti gambar di bawah ini
+7. Simpan kode program Langkah 4 s/d 6. Kemudian jalankan pada browser dan klik link
+“+ Tambah User” amati apa yang terjadi dan beri penjelasan dalam laporan
+
+<img src="image/prak2.6-7.png">
+
+8. Tambahkan script pada routes dengan nama file web.php. Tambahkan seperti gambar di
+bawah ini
+9. Tambahkan script pada controller dengan nama file UserController.php. Tambahkan
+script dalam class dan buat method baru dengan nama tambah_simpan dan diletakan di
+bawah method tambah seperti gambar di bawah ini
+10. Simpan kode program Langkah 8 dan 9. Kemudian jalankan link
+localhost:8000/user/tambah atau localhost/PWL_POS/public/user/tambah pada
+browser dan input formnya dan simpan, kemudian amati apa yang terjadi dan beri
+penjelasan dalam laporan
+11. Langkah berikutnya membuat update atau ubah data user dengan cara bikin file baru
+pada view dengan nama user_ubah.blade.php dan buat scriptnya menjadi seperti di
+bawah ini
+12. Tambahkan script pada routes dengan nama file web.php. Tambahkan seperti gambar di
+bawah ini
+13. Tambahkan script pada controller dengan nama file UserController.php. Tambahkan
+script dalam class dan buat method baru dengan nama ubah dan diletakan di bawah
+method tambah_simpan seperti gambar di bawah ini
+14. Simpan kode program Langkah 11 sd 13. Kemudian jalankan pada browser dan klik
+
+<img src="image/prak2.6-14.png">
+
+link “Ubah” amati apa yang terjadi dan beri penjelasan dalam laporan
+15. Tambahkan script pada routes dengan nama file web.php. Tambahkan seperti gambar di
+bawah ini
+16. Tambahkan script pada controller dengan nama file UserController.php. Tambahkan
+script dalam class dan buat method baru dengan nama ubah_simpan dan diletakan di
+bawah method ubah seperti gambar di bawah ini
+17. Simpan kode program Langkah 15 dan 16. Kemudian jalankan link
+localhost:8000/user/ubah/1 atau localhost/PWL_POS/public/user/ubah/1 pada
+browser dan ubah input formnya dan klik tombol ubah, kemudian amati apa yang terjadi
+dan beri penjelasan dalam laporan
+
+<img src="image/prak2.6-17.png">
+
+18. Berikut untuk langkah delete . Tambahkan script pada routes dengan nama file web.php.
+Tambahkan seperti gambar di bawah ini
+19. Tambahkan script pada controller dengan nama file UserController.php. Tambahkan
+script dalam class dan buat method baru dengan nama hapus dan diletakan di bawah
+method ubah_simpan seperti gambar di bawah ini
+20. Simpan kode program Langkah 18 dan 19. Kemudian jalankan pada browser dan klik
+tombol hapus, kemudian amati apa yang terjadi dan beri penjelasan dalam laporan
+21. Laporkan hasil Praktikum-2.6 ini dan commit perubahan pada git
