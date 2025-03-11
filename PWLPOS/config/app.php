@@ -168,6 +168,8 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        // Tambahkan ini di dalam array 'providers'
+        Yajra\DataTables\DataTablesServiceProvider::class,
     ])->toArray(),
 
     /*
