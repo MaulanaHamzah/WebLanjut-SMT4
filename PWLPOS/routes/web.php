@@ -21,12 +21,13 @@ Route::get('/', function () {
 });
 
 Route::get('/level', [Levelcontroller::class, 'index']);
-Route::get('/kategori', [Kategoricontroller::class, 'index']);
 Route::get('/user', [UserController::class, 'index']);
 Route::get('/user/tambah', [UserController::class, 'tambah']);
 Route::post('/user/tambah_simpan', [UserController::class, 'tambah_simpan']);
 Route::get('/user/ubah/{id}', [UserController::class, 'ubah']);
 Route::put('/user/ubah_simpan/{id}', [UserController::class, 'ubah_simpan']);
 Route::get('/user/hapus/{id}', [UserController::class, 'hapus']);
-Route::get('/kategori', [KategoriController::class, 'index']);
-Route::get('/kategori/data', [KategoriController::class, 'getData'])->name('kategori.data');
+Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index'); // Halaman Blade
+Route::get('/kategori/data', [KategoriController::class, 'getData'])->name('kategori.data'); // Data JSON
+Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
+Route::post('/kategori', [KategoriController::class, 'store']);
