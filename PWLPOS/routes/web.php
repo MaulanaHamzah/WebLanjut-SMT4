@@ -31,3 +31,6 @@ Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.in
 Route::get('/kategori/data', [KategoriController::class, 'getData'])->name('kategori.data'); // Data JSON
 Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
 Route::post('/kategori', [KategoriController::class, 'store']);
+Route::get('/kategori/{id}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
+Route::post('/kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
+Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');

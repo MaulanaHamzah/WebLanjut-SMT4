@@ -15,16 +15,17 @@ class KategoriController extends Controller
 
     public function getData()
     {
-    $kategori = KategoriModel::select(['kategori_id', 'kategori_kode', 'kategori_nama', 'created_at', 'updated_at']);
+        $kategori = KategoriModel::select(['kategori_id', 'kategori_kode', 'kategori_nama', 'created_at', 'updated_at']);
 
-    return DataTables::of($kategori)
-        ->editColumn('created_at', function ($row) {
-            return $row->created_at ? $row->created_at->format('Y-m-d H:i:s') : '-';
-        })
-        ->editColumn('updated_at', function ($row) {
-            return $row->updated_at ? $row->updated_at->format('Y-m-d H:i:s') : '-';
-        })
-        ->make(true);
+        return DataTables::of($kategori)
+            ->addColumn('action', function ($row) {
+                return '
+                    <a href="' . route('kategori.edit', $row->kategori_id) . '" class="btn btn-sm btn-warning">Edit</a>
+                    <button class="btn btn-sm btn-danger deleteKategori" data-id="' . $row->kategori_id . '">Delete</button>
+                ';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
 
     public function create()
@@ -39,5 +40,28 @@ class KategoriController extends Controller
             'kategori_nama' => $request->namaKategori,
         ]);
         return redirect('/kategori');
+    }
+
+    public function edit($id)
+    {
+        $kategori = KategoriModel::findOrFail($id);
+        return view('kategori.edit', compact('kategori'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $kategori = KategoriModel::findOrFail($id);
+        $kategori->update([
+            'kategori_kode' => $request->kategori_kode,
+            'kategori_nama' => $request->kategori_nama,
+        ]);
+
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui!');
+    }
+
+    public function destroy($id)
+    {
+        KategoriModel::where('kategori_id', $id)->delete();
+        return response()->json(['success' => 'Kategori berhasil dihapus']);
     }
 }
