@@ -129,3 +129,32 @@ kategori resources/views/kategori/index.blade.php
 14. Menset ViteJs / script type defaults
 15. Isikan beberapa data ke table kategori
 16. Datatables sudah dapat di load di /kategori
+
+<img src="image/prak2.0-16.png">
+
+# Praktikum 3 – Membuat form kemudian menyimpan data dalam database
+Langkah-langkahnya adalah sebagai berikut:
+
+1. Menyesuaikan routing, tambahkan dua routing berikut
+2. Tambahkan dua function berikut dalam KategoriController
+3. Dalam folder views/kategori, buatlah file dengan nama create.blade.php
+4. Kita lakukan pengecualian proteksi CsrfToken. Karena kita belum melakukan otentikasi. Kita edit dalam file berikut:
+5. Akses kategori/create
+
+<img src="image/prak3.0-5.png">
+
+6. Halaman kategori
+
+<img src="image/prak2.0-16.png">
+
+# Tugas Praktikum
+1. Tambahkan button Add di halam manage kategori, yang mengarah ke create kategori
+baru
+
+<img src="image/tugas1.png">
+
+2. Tambahkan menu untuk halaman manage kategori, di daftar menu navbar
+3. Tambahkan action edit di datatables dan buat halaman edit serta controllernya
+4. Tambahkan action delete di datatables serta controllernya
+
+<img src="image/tugas3-4.png">
