@@ -1,35 +1,48 @@
 @extends('adminlte::page')
 
-@section('title', 'Ubah User')
+@section('title', 'Edit User')
 
 @section('content_header')
-    <h1>Ubah User</h1>
+    <h1>Edit User</h1>
 @stop
 
 @section('content')
-    <form action="{{ route('user.update', $data->user_id) }}" method="POST">
-        @csrf
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" name="username" value="{{ $data->username }}" class="form-control" required>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">Form Edit User</h3>
+            </div>
+            <form action="{{ route('user.update', $user->user_id) }}" method="POST">
+                @csrf
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ $user->username }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nama">Nama</label>
+                        <input type="text" class="form-control" id="nama" name="nama" value="{{ $user->nama }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password (kosongkan jika tidak ingin mengubah)</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                    </div>
+                    <div class="form-group">
+                        <label for="level_id">Level</label>
+                        <select class="form-control" id="level_id" name="level_id" required>
+                            <option value="1" {{ $user->level_id == 1 ? 'selected' : '' }}>Admin</option>
+                            <option value="2" {{ $user->level_id == 2 ? 'selected' : '' }}>Manager</option>
+                            <option value="3" {{ $user->level_id == 3 ? 'selected' : '' }}>Staff/Kasir</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-warning">Update</button>
+                    <a href="{{ route('user.index') }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label>Nama</label>
-            <input type="text" name="nama" value="{{ $data->nama }}" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label>Password (Kosongkan jika tidak ingin diubah)</label>
-            <input type="password" name="password" class="form-control">
-        </div>
-        <div class="form-group">
-            <label>Level</label>
-            <select name="level_id" class="form-control" required>
-                <option value="1" {{ $data->level_id == 1 ? 'selected' : '' }}>Administrator</option>
-                <option value="2" {{ $data->level_id == 2 ? 'selected' : '' }}>Manager</option>
-                <option value="3" {{ $data->level_id == 3 ? 'selected' : '' }}>Staff/Kasir</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-success">Simpan</button>
-        <a href="{{ route('user.index') }}" class="btn btn-secondary">Kembali</a>
-    </form>
+    </div>
+</div>
 @stop

@@ -2,28 +2,72 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KategoriModel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class KategoriController extends Controller
 {
     public function index()
     {
-        /* $data = [
-            'kategori_kode' => 'SNK',
-            'kategori_nama' => 'Snack/Makanan Ringan',
-            'created_at' => now()
-        ];
-        DB::table('m_kategori')->insert($data);
-        return 'Insert data baru berhasil'; */
+        $kategoris = KategoriModel::all();
+        return view('kategori.index', compact('kategoris'));
+    }
 
-        // $row = DB::table('m_kategori')->where('kategori_kode', 'SNK')->update(['kategori_nama' => 'Camilan']);
-        // return 'Update data berhasil. Jumlah data yang diupdate: ' . $row.' baris';
+    public function getData()
+    {
+        $kategori = KategoriModel::all();
 
-        // $row = DB::table('m_kategori')->where('kategori_kode', 'SNK')->delete();
-        // return 'Delete data berhasil. Jumlah data yang dihapus: ' . $row.' baris';
+        return response()->json([
+            'data' => $kategori->map(function ($item) {
+                return [
+                    'kategori_id' => $item->kategori_id,
+                    'kategori_kode' => $item->kategori_kode,
+                    'kategori_nama' => $item->kategori_nama,
+                    'aksi' => '
+                        <a href="' . route('kategori.edit', $item->kategori_id) . '" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="' . route('kategori.delete', $item->kategori_id) . '" class="btn btn-danger btn-sm" onclick="return confirm(\'Hapus kategori ini?\')">Hapus</a>
+                    '
+                ];
+            }),
+        ]);
+    }
 
-        $data = DB::table('m_kategori')->get();
-        return view('kategori', ['data' => $data]);
+    public function tambah()
+    {
+        return view('kategori.create');
+    }
+
+    public function tambah_simpan(Request $request)
+    {
+        KategoriModel::create([
+            'kategori_kode' => $request->kategori_kode,
+            'kategori_nama' => $request->kategori_nama
+        ]);
+    
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan.');
+    }
+
+    public function ubah($id)
+    {
+        $kategori = KategoriModel::findOrFail($id);
+        return view('kategori.edit', compact('kategori'));
+    }
+
+    public function ubah_simpan(Request $request, $id)
+    {
+        $kategori = KategoriModel::findOrFail($id);
+        $kategori->kategori_kode = $request->kategori_kode;
+        $kategori->kategori_nama = $request->kategori_nama;
+        $kategori->save();
+
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui.');
+    }
+
+    public function hapus($id)
+    {
+        $kategori = KategoriModel::find($id);
+        $kategori->delete();
+
+        return redirect('/kategori')->with('success', 'Kategori berhasil dihapus.');
     }
 }

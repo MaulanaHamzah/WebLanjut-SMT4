@@ -1,12 +1,22 @@
-@extends('layouts.app')
+@extends('adminlte::page')
 
-@section('title', 'Welcome Page')
+@section('title', 'Dashboard')
 
 @section('content_header')
-    <h1>Selamat Datang di Aplikasi Laravel</h1>
+    <h1>PWL POS</h1>
 @stop
 
 @section('content')
-    <p>Ini adalah halaman utama aplikasi yang telah menggunakan template AdminLTE.</p>
-    <a href="{{ route('user.index') }}" class="btn btn-primary">Kelola User</a>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Selamat Datang di PWL POS</h3>
+            </div>
+            <div class="card-body">
+                <p>Ini adalah halaman utama.</p>
+            </div>
+        </div>
+    </div>
+</div>
 @stop
