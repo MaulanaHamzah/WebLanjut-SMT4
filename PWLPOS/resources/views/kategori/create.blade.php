@@ -1,36 +1,34 @@
-@extends('adminlte::page')
+@extends('layout.app')
 
-@section('title', 'Tambah Kategori')
+{{-- Customize layout sections --}}
+@section('subtitle', 'Kategori')
+@section('content_header_title', 'Kategori')
+@section('content_header_subtitle', 'Create')
 
-@section('content_header')
-    <h1>Tambah Kategori</h1>
-@stop
-
+{{-- Content body: main page content --}}
 @section('content')
-<div class="row">
-    <div class="col-md-6">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Form Tambah Kategori</h3>
-            </div>
-            <form action="{{ route('kategori.store') }}" method="POST">
-                @csrf
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="kategori_kode">Kode Kategori</label>
-                        <input type="text" class="form-control" id="kategori_kode" name="kategori_kode" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="kategori_nama">Nama Kategori</label>
-                        <input type="text" class="form-control" id="kategori_nama" name="kategori_nama" required>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                    <a href="{{ route('kategori.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
-            </form>
+<div class="container">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Buat kategori baru</h3>
         </div>
+
+        <form method="post" action="../kategori">
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="kodeKategori">Kode Kategori</label>
+                    <input type="text" class="form-control" id="kodeKategori" name="kodeKategori" placeholder="">
+                </div>
+                <div class="form-group">
+                    <label for="namaKategori">Nama Kategori</label>
+                    <input type="text" class="form-control" id="namaKategori" name="namaKategori" placeholder="">
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
     </div>
 </div>
-@stop
+@endsection

@@ -1,22 +1,26 @@
-@extends('adminlte::page')
+@extends('layout.app' )
 
-@section('title', 'Dashboard')
+{{-- Customize layout sections --}}
 
-@section('content_header')
-    <h1>PWL POS</h1>
+@section('subtitle', 'Welcome' )
+@section('content_header_title', 'Home' )
+@section('content_header_subtitle', 'Welcome' )
+
+{{-- Content body: main page content --}}
+
+@section('content_body' )
+    <p>Welcome to this beautiful admin panel.</p>
 @stop
 
-@section('content')
-<div class="row">
-    <div class="col-md-6">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Selamat Datang di PWL POS</h3>
-            </div>
-            <div class="card-body">
-                <p>Ini adalah halaman utama.</p>
-            </div>
-        </div>
-    </div>
-</div>
-@stop
+{{-- Push extra CSS --}}
+
+@push('css')
+    {{-- Add here extra stylesheets --}}
+    {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
+@endpush
+
+{{-- Push extra scripts --}}
+
+@push('js')
+    <script> console. log("Hi, I'm using the Laravel-AdminLTE package!"); </script>
+@endpush

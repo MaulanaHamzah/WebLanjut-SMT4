@@ -330,22 +330,12 @@ return [
         ['header' => 'account_settings'],
         [
             'text' => 'profile',
-            'url' => 'profile',
-            'icon' => 'fas fa-fw fa-user',
-        ],
-        [
-            'text' => 'dashboard',
-            'url' => 'dashboard',
+            'url' => 'admin/settings',
             'icon' => 'fas fa-fw fa-user',
         ],
         [
             'text' => 'kategori',
             'url' => 'kategori',
-            'icon' => 'fas fa-fw fa-user',
-        ],
-        [
-            'text' => 'user',
-            'url' => 'user',
             'icon' => 'fas fa-fw fa-user',
         ],
         [
