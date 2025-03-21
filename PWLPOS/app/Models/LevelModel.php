@@ -12,5 +12,7 @@ class LevelModel extends Model
     protected $table = 'm_level'; // Nama tabel
     protected $primaryKey = 'level_id'; // Primary Key
 
-    protected $fillable = ['level_nama']; // Sesuaikan dengan kolom yang ada di tabel m_level
+    protected $fillable = [
+        'level_nama'
+    ]; // Sesuaikan dengan kolom yang ada di tabel m_level
 }
