@@ -89,3 +89,170 @@ ganti dengan kode seperti ini @yield('content')
 
 20. Selamat kalian sudah selesai dalam melakukan layouting website di laravel.
 21. Jangan lupa commit dan push ke github untuk praktikum 1 ini
+
+# Praktikum 2 - Penerapan Layouting
+1. Kita buat file controller dengan nama WelcomeController.php
+
+<img src="image2/p2.1.png">
+
+2. Kita buat file pada PWL_POS/resources/views/welcome.blade.php
+
+<img src="image2/p2.2.png">
+
+3. Kita modifikasi file PWL_POS/resources/views/layouts/breadcrumb.blade.php
+
+<img src="image2/p2.3.png">
+
+4. Kita modifikasi file PWL_POS/resources/views/layouts/sidebar.blade.php
+5. Kita tambahkan kode berikut router web.php
+
+<img src="image2/p2.5-1.png">
+
+<img src="image2/p2.5-2.png">
+
+6. Sekarang kita coba jalankan di browser dengan mengetikkan url
+http://localhost/PWL_POS/public
+
+<img src="image2/p2.6.png">
+
+7. Jangan lupa commit dan push ke github PWL_POS kalian
+
+# Praktikum 3 – Implementasi jQuery Datatable di AdminLTE
+1. Kita modifikasi proses CRUD pada tabel m_user pada praktikum ini
+2. Kita gunakan library Yajra-datatable dengan mengetikkan perintah pada CMD
+composer require yajra/laravel-datatables:^10.0 atau
+composer require yajra/laravel-datatables-oracle
+
+<img src="image2/p3.2.png">
+
+3. Kita modifikasi route web.php untuk proses CRUD user
+
+<img src="image2/p3.3.png">
+
+4. Kita buat atau modifikasi penuh untuk UserController.php. Kita buat fungsi index()
+untuk menampilkan halaman awal user
+
+<img src="image2/p3.4.png">
+
+5. Lalu kita buat view pada PWL/resources/views/user/index.blade.php
+
+<img src="image2/p3.5.png">
+
+6. Kemudian kita modifikasi file template.blade.php untuk menambahkan library jquery
+datatables dari template AdminLTE yang kita download dan berada di folder public
+
+<img src="image2/p3.6-1.png">
+
+<img src="image2/p3.6-2.png">
+
+7. Untuk bisa menangkap request data untuk datatable, kita buat fungsi list() pada
+UserController.php seperti berikut
+
+<img src="image2/p3.7.png">
+
+8. Sekarang coba jalankan browser, dan klik menu Data User..!!! perhatikan dan amati
+apa yang terjadi.
+
+<img src="image2/p3.8.png">
+
+Menampilkan halaman/tabel daftar user
+
+9. Selanjutnya kita modifikasi UserController.php untuk form tambah data user
+
+<img src="image2/p3.9.png">
+
+10. Sekarang kita buat form untuk menambah data, kita buat file
+PWL/resources/views/user/create.blade.php
+
+<img src="image2/p3.10.png">
+
+11. Kemudian untuk bisa menng-handle data yang akan disimpan ke database, kita buat
+fungsi store() di UserController.php
+
+<img src="image2/p3.11.png">
+
+12. Sekarang coba kalian buka form tambah data user dengan klik tombol tambah. Amati
+dan pelajari..!!!
+
+<img src="image2/p3.12.png">
+
+13. Selanjutnya, kita masuk pada bagian menampilkan detail data user (klik tombol "Detail")
+pada halaman user. Route yang bertugas untuk menangkap request detail adalah
+
+<img src="image2/p3.13-1.png">
+
+<img src="image2/p3.13-2.png">
+
+14. Jadi kita buat/modifikasi fungsi show() pada UserController.php seperti berikut
+
+<img src="image2/p3.14.png">
+
+15. Kemudian kita buat view di PWL/resources/views/user/show.blade.php
+16. Sekarang kalian coba untuk melihat detail data user di browser, dan coba untuk
+mengetikkan id yang salah contoh http://localhost/PWL/public/user/100 amati apa
+yang terjadi, dan laporkan!!!
+
+<img src="image2/p3.16.png">
+
+Menampilkan hasil data yang dicari tidak ditemukan
+
+17. Selanjutnya, kita masuk pada bagian untuk memodifikasi data user. Route yang bertugas
+untuk menangkap request edit adalah
+
+<img src="image2/p3.17.png">
+
+18. Jadi kita buat fungsi edit() dan update() pada UserController.php
+
+<img src="image2/p3.18.png">
+
+19. Selanjutnya, kita buat view untuk melakukan proses edit data user di
+PWL/resources/views/user/edit.blade.php
+20. Sekarang kalian coba untuk mengedit data user di browser, amati, pahami, dan laporkan!
+
+<img src="image2/p3.20.png">
+
+Berhasil mengedit data user
+
+21. Selanjutnya kita akan membuat penanganan untuk tombol hapus. Router web.php yang
+berfungsi untuk menangkap request hapus dengan method DETELE adalah
+Route::delete('/{id}', [UserController::class, 'destroy']);
+22. Jadi kita buat fungsi destroy() pada UserController.php
+
+<img src="image2/p3.22.png">
+
+23. Selanjutnya kita modifikasi file PWL/resources/views/user/index.blade.php untuk
+menambahkan tampilan jika ada pesan error
+Menjadi
+24. Kemudian jalankan browser untuk menghapus salah satu data user. Amati dan laporkan!
+
+<img src="image2/p3.24.png">
+
+25. Selamat, kalian sudah membuat Laravel Starter Code untuk proses CRUD dengan
+menggunakan template AdminLTE dan plugin jQuery Datatables.
+26. Jangan lupa commit dan push ke github PWL_POS kalian
+
+# Praktikum 4 – Implementasi Filtering Datatables
+1. Kita modifikasi fungsi index() di UserController.php untuk menambahkan data yang
+ingin dijadikan kategori untuk data filtering
+
+<img src="image2/p3.4.png">
+
+2. Kemudian kita modifikasi view untuk menampilkan data filtering pada
+PWL/resources/views/user/index.blade.php
+3. Selanjutnya, tetap pada view index.blade.php, kita tambahkan kode berikut pada
+deklarasi ajax di datatable. Kode ini digunakan untuk mengirimkan data untuk filtering
+4. Kemudian kita edit pada bagian akhir script @push(‘js’) untuk menambahkan listener
+jika data filtering dipilih
+5. Tahapan akhir adalah memodifikasi fungsi list() pada UserController.php yang
+digunakan untuk menampilkan data pada datatable
+
+<img src="image2/p4.5.png">
+
+6. Bagian akhir adalah kita coba jalankan di browser dengan akses menu user, maka akan
+tampil seperti berikut
+
+<img src="image2/p3.24.png">
+
+7. Selamat, sekarang Laravel Starter Code sudah ada filtering dan searching data. Starter
+Code sudah bisa digunakan dalam membangun sebuah sistem berbasis website.
+8. Jangan lupa commit dan push ke github PWL_POS kalian
