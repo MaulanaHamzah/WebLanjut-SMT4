@@ -2,20 +2,9 @@
 
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WelcomeController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+use App\Http\Controllers\UserController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -23,13 +12,17 @@ use App\Http\Controllers\WelcomeController;
 
 Route::get('/', [WelcomeController::class, 'index']);
 
-Route::get('/level', [Levelcontroller::class, 'index']);
-Route::get('/user', [UserController::class, 'index']);
-Route::get('/user/tambah', [UserController::class, 'tambah']);
-Route::post('/user/tambah_simpan', [UserController::class, 'tambah_simpan']);
-Route::get('/user/ubah/{id}', [UserController::class, 'ubah']);
-Route::put('/user/ubah_simpan/{id}', [UserController::class, 'ubah_simpan']);
-Route::get('/user/hapus/{id}', [UserController::class, 'hapus']);
+Route::group(['prefix' => 'user'], function () {
+    Route::get('/', [UserController::class, 'index']);          //Menampilkan halaman awal user
+    Route::post('/list', [UserController::class, 'list']);      //Menampilkan data user dalam bentuk json
+    Route::get('/create', [UserController::class, 'create']);   //Menampilkan halaman form tambah user
+    Route::post('/', [UserController::class, 'store']);         //Menyimpan data user baru
+    Route::get('/{id}', [UserController::class, 'show']);       //Menampilkan detail user
+    Route::get('/{id}/edit', [UserController::class, 'edit']);  //Menampilkan halaman form edit user
+    Route::put('/{id}', [UserController::class, 'update']);     //Menyimpan perubahan data user
+    Route::delete('/{id}', [UserController::class, 'destroy']); //Menghapus data user
+});
+
 Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index'); // Halaman Blade
 Route::get('/kategori/data', [KategoriController::class, 'getData'])->name('kategori.data'); // Data JSON
 Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
