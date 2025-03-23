@@ -55,7 +55,8 @@ class UserController extends Controller
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
             ->make(true);
     }
-
+    
+    // public function list(Request $request)
     public function create()
     {
         $breadcrumb = (object) [
@@ -70,6 +71,7 @@ class UserController extends Controller
         return view('user.create', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
+    // Menampilkan halaman form tambah user dengan ajax
     public function create_ajax()
     {
         $level = LevelModel::select('level_id', 'level_nama')->get();
@@ -78,6 +80,7 @@ class UserController extends Controller
             ->with('level', $level);
     }
 
+    // Menyimpan data user baru
     public function store(Request $request)
     {
         $request->validate([
@@ -96,6 +99,7 @@ class UserController extends Controller
         return redirect('/user')->with('success', 'Data user berhasil disimpan');
     }
 
+    // Menyimpan data user baru dengan ajax
     public function store_ajax(Request $request)
     {
         // cek apakah request berupa ajax
@@ -143,6 +147,7 @@ class UserController extends Controller
         return view('user.show', ['breadcrumb' => $breadcrumb, 'page' => $page, 'user' => $user, 'activeMenu' => $activeMenu]);
     }
 
+    // Menampilkan detail user ajax
     public function show_ajax(string $id)
     {
         $user = UserModel::with('level')->find($id);
