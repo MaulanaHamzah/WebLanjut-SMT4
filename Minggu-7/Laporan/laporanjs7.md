@@ -42,6 +42,50 @@ halaman awal untuk login ke aplikasi
 
 <img src="image/p1.6.png">
 
+# Tugas 1 – Implementasi Authentication :
+1. Silahkan implementasikan proses login pada project kalian masing-masing
+
+<img src="image/t1.1-1.png">
+
+<img src="image/t1.1-2.png">
+
+<img src="image/t1.1-3.png">
+
+2. Silahkan implementasi proses logout pada halaman web yang kalian buat
+
+<img src="image/t1.2-1.png">
+
+<img src="image/t1.2-2.png">
+
+<img src="image/t1.2-3.png">
+
+<img src="image/t1.2-4.png">
+
+3. Amati dan jelaskan tiap tahapan yang kalian kerjakan, dan jabarkan dalam laporan
+
+- Mengatur config/auth.php dengan UserModel yang sesuai
+
+<img src="image/p1.1.png">
+
+- UserModel meng-extends dari “Illuminate\Foundation\Auth\User“
+
+<img src="image/t1.3-1.png">
+
+- Membuat AuthController.php untuk memproses login yang memiliki method
+login, postLogin, dan logout
+
+<img src="image/t1.3-2.png">
+
+- Membuat view/form untuk mengisi informasi login
+
+<img src="image/p1.6.png">
+
+- Menambahkan rute untuk AuthController pada route/web.php
+
+<img src="image/t1.3-3.png">
+
+4. Submit kode untuk impementasi Authentication pada repository github kalian.
+
 # Praktikum 2 – Implementasi Authorizaton di Laravel dengan Middleware
 1. Kita modifikasi UserModel.php dengan menambahkan kode berikut
 
@@ -77,6 +121,33 @@ administrator, dan kita akses route menu level tersebut
 
 <img src="image/p2.7.png">
 
+# Tugas 2 – Implementasi Authoriization :
+
+1. Apa yang kalian pahami pada praktikum 2 ini?
+
+Mengimplementasi Authoriization atau hak akses menggunakan middleware
+
+2. Amati dan jelaskan tiap tahapan yang kalian kerjakan, dan jabarkan dalam laporan
+
+- Pada UserModel.php menambahkan method getRoleName dan hasRole
+
+<img src="image/p2.1.png">
+
+- Membuat dan mengedit middleware AuthorizeUser.php bagaimana menghandle user request dengan mengecheck rolenya
+
+<img src="image/p2.3.png">
+
+- Mendaftarkan middleware AuthorizeUser.php ke app/Http/Kernel.php
+
+<img src="image/p2.4.png">
+
+- Pada route/web.php menentukan route mana saja yang akan diberi hak akses 
+sesuai dengan levelnya
+
+<img src="image/t2.1.png">
+
+3. Submit kode untuk impementasi Authorization pada repository github kalian
+
 # Praktikum 3 – Implementasi Multi-Level Authorizaton di Laravel dengan Middleware
 1. Kita modifikasi UserModel.php untuk mendapatkan level_kode dari user yang sudah
 login. Jadi kita buat fungsi dengan nama getRole()
@@ -93,3 +164,43 @@ diinginkan. Contoh
 <img src="image/p2.6.png">
 
 4. Sekarang kita sudah bisa memberikan hak akses menu/route ke beberapa level user
+
+# Tugas 3 – Implementasi Multi-Level Authorization :
+1. Silahkan implementasikan multi-level authorization pada project kalian masing-masing
+
+2. Amati dan jelaskan tiap tahapan yang kalian kerjakan, dan jabarkan dalam laporan
+
+- Pada UserModel.php menambahkan method getRole
+
+<img src="image/t3.1-1.png">
+
+- Pada AuthorizeUser.php merubah parameter $roles menajadi array
+
+<img src="image/t3.1-2.png">
+
+3. Implementasikan multi-level authorization untuk semua Level/Jenis User dan Menu-
+menu yang sesuai dengan Level/Jenis User
+
+4. Submit kode untuk impementasi Authorization pada repository github kalian.
+
+# Tugas 4 – Implementasi Form Registrasi :
+1. Silahkan implementasikan form untuk registrasi user.
+2. Screenshot hasil yang kalian kerjakan
+
+- Routes:
+
+<img src="image/t4.1-1.png">
+
+- Controller: 
+
+<img src="image/t4.1-2.png">
+
+- login page:
+
+<img src="image/t4.1-3.png">
+
+- register page:
+
+<img src="image/t4.1-4.png">
+
+3. Commit dan push hasil tugas kalian ke masing-masing repo github kalian
