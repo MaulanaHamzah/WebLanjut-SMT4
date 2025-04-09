@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\PenjualanDataTable;
+use App\Models\BarangModel;
+use App\Models\PenjualanDetailModel;
 use App\Models\PenjualanModel;
+use App\Models\StokModel;
 use App\Models\UserModel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class PenjualanController extends Controller
 {
@@ -25,27 +32,11 @@ class PenjualanController extends Controller
         return view('penjualan.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'activeMenu' => $activeMenu]);
     }
 
-    // Ambil data penjualan dalam bentuk json untuk datatables
-    public function list(Request $request)
+    public function list(PenjualanDataTable $dataTable)
     {
-        $penjualans = PenjualanModel::select('penjualan_id', 'user_id', 'pembeli', 'penjualan_kode', 'penjualan_tanggal')
-            ->with('user');
-
-        return DataTables::of($penjualans)
-            ->addIndexColumn() // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
-            ->addColumn('aksi', function ($penjualan) { // menambahkan kolom aksi
-                $btn = '<a href="' . url('/penjualan/' . $penjualan->penjualan_id) . '" class="btn btn-info btn-sm">Detail</a> ';
-                $btn .= '<a href="' . url('/penjualan/' . $penjualan->penjualan_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a> ';
-                $btn .= '<form class="d-inline-block" method="POST" action="' . url('/penjualan/' . $penjualan->penjualan_id) . '">' .
-                    csrf_field() . method_field('DELETE') .
-                    '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
-                return $btn;
-            })
-            ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
-            ->make(true);
+        return $dataTable->render();
     }
 
-    // Menampilkan halaman form tambah penjualan
     public function create()
     {
         $breadcrumb = (object) [
@@ -57,42 +48,139 @@ class PenjualanController extends Controller
             'title' => 'Tambah penjualan baru'
         ];
 
+        $activeMenu = 'penjualan';
         $user = UserModel::all();
-        $activeMenu = 'penjualan'; // set menu yang sedang aktif
+        $barang = BarangModel::all();
 
         return view('penjualan.create', [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'user' => $user,
+            'barang' => $barang,
             'activeMenu' => $activeMenu
         ]);
     }
 
-    // Menyimpan data penjualan baru
+    public function create_ajax()
+    {
+        $user = UserModel::all();
+        $barang = BarangModel::all();
+
+        return view('penjualan.create_ajax', [
+            'user' => $user,
+            'barang' => $barang
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'user_id' => 'required|integer',
-            // 'pembeli' => 'required|string|max:50',
             'penjualan_kode' => 'required|string|max:20|unique:t_penjualan,penjualan_kode',
             'penjualan_tanggal' => 'required|date',
+            'barang_nama' => 'required|array',
+            'barang_nama.*' => 'required|string|max:50',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'required|integer|min:1',
         ]);
 
         $pembeli = UserModel::find($request->user_id)->nama;
-        PenjualanModel::create([
+        $penjualan = PenjualanModel::create([
             'user_id' => $request->user_id,
             'pembeli' => $pembeli,
             'penjualan_kode' => $request->penjualan_kode,
             'penjualan_tanggal' => $request->penjualan_tanggal,
         ]);
 
+        foreach ($request->barang_nama as $key => $barang_nama) {
+            $barang_id = BarangModel::where('barang_nama', $barang_nama)->first()->barang_id;
+            $harga = BarangModel::where('barang_id', $barang_id)->first()->harga_jual;
+
+            $stok = StokModel::where('barang_id', $barang_id)->first();
+            if (!empty($stok) && $request->kurangi_stok) {
+                $stok->update([
+                    'stok_jumlah' => $stok->stok_jumlah - $request->jumlah[$key]
+                ]);
+            }
+
+            PenjualanDetailModel::create([
+                'penjualan_id' => $penjualan->penjualan_id,
+                'barang_id' => $barang_id,
+                'jumlah' => $request->jumlah[$key],
+                'harga' => $harga
+            ]);
+        }
+
         return redirect('/penjualan')->with('success', 'Data penjualan berhasil disimpan');
     }
 
-    // Menampilkan detail penjualan
+    public function store_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'user_id' => 'required|integer',
+                'penjualan_kode' => 'required|string|max:20|unique:t_penjualan,penjualan_kode',
+                'penjualan_tanggal' => 'required|date',
+                'barang_nama' => 'required|array',
+                'barang_nama.*' => 'required|string|max:50',
+                'jumlah' => 'required|array',
+                'jumlah.*' => 'required|integer|min:1',
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors()
+                ]);
+            }
+
+            try {
+                $pembeli = UserModel::find($request->user_id)->nama;
+                $penjualan = PenjualanModel::create([
+                    'user_id' => $request->user_id,
+                    'pembeli' => $pembeli,
+                    'penjualan_kode' => $request->penjualan_kode,
+                    'penjualan_tanggal' => $request->penjualan_tanggal,
+                ]);
+
+                foreach ($request->barang_nama as $key => $barang_nama) {
+                    $barang_id = BarangModel::where('barang_nama', $barang_nama)->first()->barang_id;
+                    $harga = BarangModel::where('barang_id', $barang_id)->first()->harga_jual;
+
+                    $stok = StokModel::where('barang_id', $barang_id)->first();
+                    if (!empty($stok) && $request->kurangi_stok) {
+                        $stok->update([
+                            'stok_jumlah' => $stok->stok_jumlah - $request->jumlah[$key]
+                        ]);
+                    }
+
+                    PenjualanDetailModel::create([
+                        'penjualan_id' => $penjualan->penjualan_id,
+                        'barang_id' => $barang_id,
+                        'jumlah' => $request->jumlah[$key],
+                        'harga' => $harga
+                    ]);
+                }
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data penjualan berhasil disimpan'
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data penjualan gagal disimpan'
+                ]);
+            }
+        }
+    }
+
     public function show(string $id)
     {
         $penjualan = PenjualanModel::with('user')->find($id);
+        $detail = PenjualanDetailModel::with('barang')->where('penjualan_id', $id)->get();
 
         $breadcrumb = (object) [
             'title' => 'Detail penjualan',
@@ -103,21 +191,34 @@ class PenjualanController extends Controller
             'title' => 'Detail penjualan'
         ];
 
-        $activeMenu = 'penjualan'; // set menu yang sedang aktif
+        $activeMenu = 'penjualan';
 
         return view('penjualan.show', [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'penjualan' => $penjualan,
+            'detail' => $detail,
             'activeMenu' => $activeMenu
         ]);
     }
 
-    // Menampilkan halaman form edit penjualan
+    public function show_ajax(string $id)
+    {
+        $penjualan = PenjualanModel::with('user')->find($id);
+        $detail = PenjualanDetailModel::with('barang')->where('penjualan_id', $id)->get();
+
+        return view('penjualan.show_ajax', [
+            'penjualan' => $penjualan,
+            'detail' => $detail,
+        ]);
+    }
+
     public function edit(string $id)
     {
         $penjualan = PenjualanModel::with('user')->find($id);
+        $penjualanDetail = PenjualanDetailModel::with('barang')->where('penjualan_id', $id)->get();
         $user = UserModel::all();
+        $barang = BarangModel::all();
 
         $breadcrumb = (object) [
             'title' => 'Edit Penjualan',
@@ -128,51 +229,215 @@ class PenjualanController extends Controller
             'title' => 'Edit penjualan'
         ];
 
-        $activeMenu = 'penjualan'; // set menu yang sedang aktif
+        $activeMenu = 'penjualan';
 
         return view('penjualan.edit', [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'penjualan' => $penjualan,
+            'penjualanDetail' => $penjualanDetail,
+            'barang' => $barang,
             'user' => $user,
             'activeMenu' => $activeMenu
         ]);
     }
 
-    // Menyimpan perubahan data penjualan
+    public function edit_ajax(string $id)
+    {
+        $penjualan = PenjualanModel::with('user')->find($id);
+        $penjualanDetail = PenjualanDetailModel::with('barang')->where('penjualan_id', $id)->get();
+        $user = UserModel::all();
+        $barang = BarangModel::all();
+
+        return view('penjualan.edit_ajax', [
+            'penjualan' => $penjualan,
+            'penjualanDetail' => $penjualanDetail,
+            'barang' => $barang,
+            'user' => $user
+        ]);
+    }
+
     public function update(Request $request, string $id)
     {
         $request->validate([
             'user_id' => 'required|integer',
             'penjualan_kode' => 'required|string|max:20|unique:t_penjualan,penjualan_kode,' . $id . ',penjualan_id',
             'penjualan_tanggal' => 'required|date',
+            'barang_nama' => 'required|array',
+            'barang_nama.*' => 'required|string|max:50',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'required|integer|min:1',
         ]);
 
         $pembeli = UserModel::find($request->user_id)->nama;
-        PenjualanModel::find($id)->update([
+        $penjualan = PenjualanModel::find($id);
+        $penjualan->update([
             'user_id' => $request->user_id,
             'pembeli' => $pembeli,
             'penjualan_kode' => $request->penjualan_kode,
             'penjualan_tanggal' => $request->penjualan_tanggal,
         ]);
 
+        $penjualanDetail = PenjualanDetailModel::where('penjualan_id', $id)->get();
+        $barangIdArray = [];
+        foreach ($request->barang_nama as $key => $barang_nama) {
+            $barang_id = BarangModel::where('barang_nama', $barang_nama)->first()->barang_id;
+            $harga = BarangModel::where('barang_id', $barang_id)->first()->harga_jual;
+            $barangIdArray[] = $barang_id;
+            $check = $penjualanDetail->where('barang_id', $barang_id)->first();
+            if ($check) {
+                $check->update([
+                    'penjualan_id' => $penjualan->penjualan_id,
+                    'barang_id' => $barang_id,
+                    'jumlah' => $request->jumlah[$key],
+                    'harga' => $harga
+                ]);
+            } else {
+                PenjualanDetailModel::create([
+                    'penjualan_id' => $penjualan->penjualan_id,
+                    'barang_id' => $barang_id,
+                    'jumlah' => $request->jumlah[$key],
+                    'harga' => $harga
+                ]);
+            }
+        }
+
+        foreach ($penjualanDetail as $detail) {
+            if (!in_array($detail->barang_id, $barangIdArray)) {
+                $detail->delete();
+            }
+        }
+
         return redirect('/penjualan')->with('success', 'Data penjualan berhasil diubah');
     }
 
-    // Menghapus data penjualan
+    public function update_ajax(Request $request, string $id)
+    {
+        $rules = [
+            'user_id' => 'required|integer',
+            'penjualan_kode' => 'required|string|max:20|unique:t_penjualan,penjualan_kode,' . $id . ',penjualan_id',
+            'penjualan_tanggal' => 'required|date',
+            'barang_nama' => 'required|array',
+            'barang_nama.*' => 'required|string|max:50',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'required|integer|min:1',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi gagal.',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        try {
+            $pembeli = UserModel::find($request->user_id)->nama;
+            $penjualan = PenjualanModel::find($id);
+            $penjualan->update([
+                'user_id' => $request->user_id,
+                'pembeli' => $pembeli,
+                'penjualan_kode' => $request->penjualan_kode,
+                'penjualan_tanggal' => $request->penjualan_tanggal,
+            ]);
+
+            $penjualanDetail = PenjualanDetailModel::where('penjualan_id', $id)->get();
+            $barangIdArray = [];
+            foreach ($request->barang_nama as $key => $barang_nama) {
+                $barang_id = BarangModel::where('barang_nama', $barang_nama)->first()->barang_id;
+                $harga = BarangModel::where('barang_id', $barang_id)->first()->harga_jual;
+                $barangIdArray[] = $barang_id;
+                $check = $penjualanDetail->where('barang_id', $barang_id)->first();
+                if ($check) {
+                    $check->update([
+                        'penjualan_id' => $penjualan->penjualan_id,
+                        'barang_id' => $barang_id,
+                        'jumlah' => $request->jumlah[$key],
+                        'harga' => $harga
+                    ]);
+                } else {
+                    PenjualanDetailModel::create([
+                        'penjualan_id' => $penjualan->penjualan_id,
+                        'barang_id' => $barang_id,
+                        'jumlah' => $request->jumlah[$key],
+                        'harga' => $harga
+                    ]);
+                }
+            }
+
+            foreach ($penjualanDetail as $detail) {
+                if (!in_array($detail->barang_id, $barangIdArray)) {
+                    $detail->delete();
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data penjualan berhasil diubah'
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data penjualan gagal diubah'
+            ]);
+        }
+    }
+
     public function destroy(string $id)
     {
-        $check = PenjualanModel::find($id); // untuk mengecek apakah data penjualan dengan id yang dimaksud ada atau tidak
-        if (!$check) {
+        $checkPenjualan = PenjualanModel::find($id);
+
+        if (!$checkPenjualan) {
             return redirect('/penjualan')->with('error', 'Data penjualan tidak ditemukan');
         }
 
         try {
-            PenjualanModel::destroy($id); // Hapus data penjualan
+            PenjualanDetailModel::where('penjualan_id', $id)->delete();
+            PenjualanModel::destroy($id);
             return redirect('/penjualan')->with('success', 'Data penjualan berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika terjadi error ketika menghapus data, redirect kembali ke halaman dengan membawa pesan error
             return redirect('/penjualan')->with('error', 'Data penjualan gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
         }
+    }
+
+    public function confirm_ajax(string $id)
+    {
+        $penjualan = PenjualanModel::with('user')->find($id);
+        $detail = PenjualanDetailModel::with('barang')->where('penjualan_id', $id)->get();
+
+        return view('penjualan.confirm_ajax', [
+            'penjualan' => $penjualan,
+            'detail' => $detail,
+        ]);
+    }
+
+    public function delete_ajax(Request $request, $id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $penjualan = PenjualanModel::find($id);
+
+            if ($penjualan) {
+                try {
+                    PenjualanDetailModel::where('penjualan_id', $id)->delete();
+                    $penjualan->delete();
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil dihapus'
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Data tidak bisa dihapus'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
+        }
+        return redirect('/');
     }
 }
