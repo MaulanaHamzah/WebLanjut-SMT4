@@ -37,6 +37,13 @@
         </div>
       </li>
 
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url('logout') }}" role="button" style="transition: color 0.3s;"
+          onmouseover="this.style.color='red'" onmouseout="this.style.color=''">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+      </li>
+
       <!-- Messages Dropdown Menu -->
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
