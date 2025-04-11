@@ -126,11 +126,22 @@ menambahkan tombol export ke pdf pada barang/index.blade.php
 dengan nama barang/export_pdf.blade.php
 6. Selanjutnya kita buat view untuk me-generate html untuk tampilan pdf yang akan kita
 sajikan. View berada di barang/export_pdf.blade.php
+
+<img src="image/p3.6.png">
+
 7. Selanjutnya, Kita coba untuk melakukan proses download export pdf. Amati dan
 pelajari…!!!
+
+<img src="image/p3.7.png">
 
 # Tugas 3 – Implementasi Export PDF pada Laravel :
 1. Silahkan implementasikan export pdf pada project kalian masing-masing untuk semua
 menu
 2. Amati dan jelaskan tiap tahapan yang kalian kerjakan, dan jabarkan dalam laporan
+3. Submit kode untuk impementasi export pdf pada repository github kalian.
+
+# Tugas 4 – Implementasi Upload File Gambar :
+1. Silahkan implementasikan fitur upload file untuk mengubah foto profile di project web
+kalian
+2. Jelaskan tiap tahapan yang kalian kerjakan, dan jabarkan dalam laporan
 3. Submit kode untuk impementasi export pdf pada repository github kalian.

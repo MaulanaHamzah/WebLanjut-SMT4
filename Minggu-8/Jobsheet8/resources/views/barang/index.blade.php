@@ -1,4 +1,4 @@
-csrf@extends('layouts.template')
+@extends('layouts.template')
 @section('content')
     <div class="card">
         <div class="card-header">
