@@ -6,6 +6,7 @@ use App\DataTables\UserDataTable;
 use App\Models\LevelModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -57,11 +58,7 @@ class UserController extends Controller
     {
         $rules = [
             'level_id' => ['required', 'integer'],
-            'username' => [
-                'required',
-                'max:20',
-                'unique:m_user,username',
-            ],
+            'username' => ['required', 'max:20', 'unique:m_user,username'],
             'nama' => ['required', 'max:100'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
             'password' => ['required', 'min:5', 'max:20']
@@ -70,22 +67,26 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $data = $request->all();
+        $data = $request->except('profile_picture');
+        $data['password'] = bcrypt($data['password']);
+
+        // Simpan data user dulu
+        $user = UserModel::create($data);
+
+        // Kalau ada file gambar, proses upload dan update picture_path
         if ($request->hasFile('profile_picture')) {
-            $id = UserModel::all()->max('user_id') + 1;
             $image = $request->file('profile_picture');
-            $imageName = 'profile-' . $id . '.webp';
+            $imageName = 'profile-' . $user->user_id . '.webp';
             $image->storeAs('public/profile_pictures', $imageName);
-            $data['picture_path'] = 'storage/profile_pictures/' . $imageName;
-            unset($data['profile_picture']);
+
+            $user->update([
+                'picture_path' => 'storage/profile_pictures/' . $imageName
+            ]);
         }
 
-        UserModel::create($data);
         return redirect('/user')->with('success', 'Data user berhasil disimpan');
     }
 
@@ -94,11 +95,7 @@ class UserController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'level_id' => ['required', 'integer'],
-                'username' => [
-                    'required',
-                    'max:20',
-                    'unique:m_user,username',
-                ],
+                'username' => ['required', 'max:20', 'unique:m_user,username'],
                 'nama' => ['required', 'max:100'],
                 'profile_picture' => ['nullable', 'image', 'max:2048'],
                 'password' => ['required', 'min:5', 'max:20']
@@ -114,17 +111,22 @@ class UserController extends Controller
                 ]);
             }
 
-            $data = $request->all();
-            if ($request->hasFile('profile_picture')) {
-                $id = UserModel::all()->max('user_id') + 1;
-                $image = $request->file('profile_picture');
-                $imageName = 'profile-' . $id . '.webp';
-                $image->storeAs('public/profile_pictures', $imageName);
-                $data['picture_path'] = 'storage/profile_pictures/' . $imageName;
-                unset($data['profile_picture']);
-            }
+            $data = $request->except('profile_picture');
+            $data['password'] = bcrypt($data['password']);
 
-            UserModel::create($data);
+            // Simpan data user dulu
+            $user = UserModel::create($data);
+
+            // Upload gambar jika ada
+            if ($request->hasFile('profile_picture')) {
+                $image = $request->file('profile_picture');
+                $imageName = 'profile-' . $user->user_id . '.webp';
+                $image->storeAs('public/profile_pictures', $imageName);
+
+                $user->update([
+                    'picture_path' => 'storage/profile_pictures/' . $imageName
+                ]);
+            }
 
             return response()->json([
                 'status' => true,
@@ -172,6 +174,9 @@ class UserController extends Controller
 
     public function edit_ajax(string $id)
     {
+        if (Auth::user()->getRole() == 'NEW' && $id != Auth::user()->user_id) {
+            abort(403, 'Forbidden. Kamu tidak punya akses ke halaman ini');
+        }
         $user = UserModel::find($id);
         $level = LevelModel::select('level_id', 'level_nama')->get();
 
@@ -212,7 +217,7 @@ class UserController extends Controller
 
             $validator = Validator::make($request->all(), $rules);
 
-            if ($validator->fails()) {
+            if ($validator->fails() || (Auth::user()->getRole() == 'NEW' && $id != Auth::user()->user_id)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Validasi gagal.',
@@ -363,7 +368,7 @@ class UserController extends Controller
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'Username');
         $sheet->setCellValue('C1', 'Nama');
-        $sheet->setCellValue('F1', 'Level Pengguna');
+        $sheet->setCellValue('D1', 'Level ID');
         $sheet->getStyle('A1:F1')->getFont()->setBold(true);
 
         $no = 1;
@@ -372,7 +377,7 @@ class UserController extends Controller
             $sheet->setCellValue('A' . $baris, $no);
             $sheet->setCellValue('B' . $baris, $value->username);
             $sheet->setCellValue('C' . $baris, $value->nama);
-            $sheet->setCellValue('F' . $baris, $value->level_id);
+            $sheet->setCellValue('D' . $baris, $value->level_id);
             $baris++;
             $no++;
         }

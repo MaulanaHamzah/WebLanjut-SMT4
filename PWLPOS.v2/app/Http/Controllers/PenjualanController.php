@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Carbon\Carbon;
 use App\DataTables\PenjualanDataTable;
 use App\Models\BarangModel;
 use App\Models\PenjualanDetailModel;
@@ -482,6 +484,7 @@ class PenjualanController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
+
             $file = $request->file('file_penjualan');
             $reader = IOFactory::createReader('Xlsx');
             $reader->setReadDataOnly(true);
@@ -489,25 +492,38 @@ class PenjualanController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $data = $sheet->toArray(null, false, true, true);
             $insertDetail = [];
+
             if (count($data) > 1) {
                 try {
                     $kodePenjualan = '';
                     foreach ($data as $baris => $value) {
-                        if ($baris > 1) {
+                        if ($baris > 1) {  // skip header
                             if ($kodePenjualan != $value['A']) {
+
                                 if (PenjualanModel::where('penjualan_kode', $value['A'])->first()) {
                                     continue;
                                 }
+
+                                // Konversi tanggal
+                                $tanggalExcel = $value['B'];
+                                if (is_numeric($tanggalExcel)) {
+                                    $tanggal = Carbon::instance(Date::excelToDateTimeObject($tanggalExcel))->format('Y-m-d H:i:s');
+                                } else {
+                                    $tanggal = Carbon::parse($tanggalExcel)->format('Y-m-d H:i:s');
+                                }
+
                                 $penjualan = PenjualanModel::create([
                                     'penjualan_kode' => $value['A'],
-                                    'penjualan_tanggal' => $value['B'],
+                                    'penjualan_tanggal' => $tanggal,
                                     'pembeli' => $value['C'],
                                     'user_id' => $value['D'],
                                     'created_at' => now(),
                                     'updated_at' => now()
                                 ]);
+
                                 $kodePenjualan = $value['A'];
                             }
+
                             $insertDetail[] = [
                                 'penjualan_id' => $penjualan->penjualan_id,
                                 'barang_id' => $value['E'],
@@ -518,9 +534,11 @@ class PenjualanController extends Controller
                             ];
                         }
                     }
+
                     if (count($insertDetail) > 0) {
                         PenjualanDetailModel::insertOrIgnore($insertDetail);
                     }
+
                     return response()->json([
                         'status' => true,
                         'message' => 'Data berhasil diimport'
