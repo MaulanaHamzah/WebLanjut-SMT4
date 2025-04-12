@@ -5,10 +5,21 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
-                <a class="btn btn-sm btn-primary mt-1" href="{{ url('barang/create') }}">Tambah</a>
-                <button onclick="modalAction('{{ url('/barang/create_ajax') }}')" class="btn btn-sm btn-success mt-1">
+                <a class="btn btn-sm btn-primary" href="{{ url('barang/create') }}">Tambah</a>
+                <button onclick="modalAction('{{ url('/barang/create_ajax') }}')" class="btn btn-sm btn-success">
                     Tambah Ajax
                 </button>
+                <button onclick="modalAction('{{ url('/barang/import') }}')" class="btn btn-sm btn-info">
+                    Import Data
+                </button>
+                <a href="{{ url('/barang/export_excel') }}" class="btn btn-sm btn-primary">
+                    <i class="fa fa-file-excel"></i>
+                    Export Excel
+                </a>
+                <a href="{{ url('barang/export_pdf') }}" class="btn btn-sm btn-warning">
+                    <i class="fa fa-file-pdf"></i>
+                    Export PDF
+                </a>
             </div>
         </div>
         <div class="card-body">
@@ -114,11 +125,13 @@
                     },
                     {
                         data: "aksi",
-                        className: "",
+                        className: "text-center",
+                        width: "195px",
                         orderable: false,
                         searchable: false
                     }
-                ]
+                ],
+                autoWidth: false
             });
 
             $('#kategori_id').on('change', function() {

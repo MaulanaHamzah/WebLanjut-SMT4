@@ -9,6 +9,7 @@ use App\Models\PenjualanModel;
 use App\Models\StokModel;
 use App\Models\UserModel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -30,6 +31,27 @@ class PenjualanController extends Controller
         $activeMenu = 'penjualan';
 
         return view('penjualan.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'activeMenu' => $activeMenu]);
+    }
+
+    public function indexSelf()
+    {
+        $breadcrumb = (object)[
+            'title' => 'Daftar Penjualan',
+            'list' => ['Home', 'Penjualan Sendiri']
+        ];
+
+        $page = (object)[
+            'title' => 'Daftar penjualan yang terdaftar dalam sistem'
+        ];
+
+        $activeMenu = 'penjualan_self';
+
+        return view('penjualan.index', [
+            'breadcrumb' => $breadcrumb,
+            'page' => $page,
+            'activeMenu' => $activeMenu,
+            'self' => true
+        ]);
     }
 
     public function list(PenjualanDataTable $dataTable)
@@ -439,5 +461,161 @@ class PenjualanController extends Controller
             }
         }
         return redirect('/');
+    }
+
+    public function import()
+    {
+        return view('penjualan.import');
+    }
+
+    public function import_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'file_penjualan' => ['required', 'mimes:xlsx', 'max:1024']
+            ];
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors()
+                ]);
+            }
+            $file = $request->file('file_penjualan');
+            $reader = IOFactory::createReader('Xlsx');
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, false, true, true);
+            $insertDetail = [];
+            if (count($data) > 1) {
+                try {
+                    $kodePenjualan = '';
+                    foreach ($data as $baris => $value) {
+                        if ($baris > 1) {
+                            if ($kodePenjualan != $value['A']) {
+                                if (PenjualanModel::where('penjualan_kode', $value['A'])->first()) {
+                                    continue;
+                                }
+                                $penjualan = PenjualanModel::create([
+                                    'penjualan_kode' => $value['A'],
+                                    'penjualan_tanggal' => $value['B'],
+                                    'pembeli' => $value['C'],
+                                    'user_id' => $value['D'],
+                                    'created_at' => now(),
+                                    'updated_at' => now()
+                                ]);
+                                $kodePenjualan = $value['A'];
+                            }
+                            $insertDetail[] = [
+                                'penjualan_id' => $penjualan->penjualan_id,
+                                'barang_id' => $value['E'],
+                                'jumlah' => $value['F'],
+                                'harga' => $value['G'],
+                                'created_at' => now(),
+                                'updated_at' => now()
+                            ];
+                        }
+                    }
+                    if (count($insertDetail) > 0) {
+                        PenjualanDetailModel::insertOrIgnore($insertDetail);
+                    }
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil diimport'
+                    ]);
+                } catch (Exception $e) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $e->getMessage()
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada data yang diimport'
+                ]);
+            }
+        }
+        return redirect('/');
+    }
+
+    public function export_excel()
+    {
+        $penjualan = PenjualanModel::all();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Kode Penjualan');
+        $sheet->setCellValue('C1', 'Tanggal Penjualan');
+        $sheet->setCellValue('D1', 'Pembeli');
+        $sheet->setCellValue('E1', 'User ID');
+        $sheet->setCellValue('F1', 'Barang ID');
+        $sheet->setCellValue('G1', 'Jumlah');
+        $sheet->setCellValue('H1', 'Harga');
+        $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+
+        $no = 1;
+        $baris = 2;
+        foreach ($penjualan as $item) {
+            $details = PenjualanDetailModel::where('penjualan_id', $item->penjualan_id)->get();
+            foreach ($details as $detail) {
+                $sheet->setCellValue('A' . $baris, $no);
+                $sheet->setCellValue('B' . $baris, $item->penjualan_kode);
+                $sheet->setCellValue('C' . $baris, $item->penjualan_tanggal);
+                $sheet->setCellValue('D' . $baris, $item->pembeli);
+                $sheet->setCellValue('E' . $baris, $item->user_id);
+                $sheet->setCellValue('F' . $baris, $detail->barang_id);
+                $sheet->setCellValue('G' . $baris, $detail->jumlah);
+                $sheet->setCellValue('H' . $baris, $detail->harga);
+                $baris++;
+                $no++;
+            }
+        }
+
+        foreach (range('A', 'H') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $sheet->setTitle('Data Penjualan');
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data Penjualan ' . date('Y-m-d H:i:s') . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, dMY H:i:s') . 'GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function export_pdf()
+    {
+        $penjualanModel = PenjualanModel::all();
+        $penjualan =  [];
+        foreach ($penjualanModel as $item) {
+            $details = PenjualanDetailModel::where('penjualan_id', $item->penjualan_id)->get();
+            foreach ($details as $detail) {
+                $penjualan[] = (object) [
+                    'penjualan_kode' => $item->penjualan_kode,
+                    'penjualan_tanggal' => $item->penjualan_tanggal,
+                    'pembeli' => $item->pembeli,
+                    'barang_nama' => $detail->barang->barang_nama,
+                    'jumlah' => $detail->jumlah,
+                    'harga' => $detail->harga
+                ];
+            }
+        }
+
+        $pdf = Pdf::loadView('penjualan.export_pdf', ['penjualan' => $penjualan]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption("isRemoteEnabled", true); // set true jika ada gambar dari url 
+        $pdf->render();
+        return $pdf->stream('Data Barang ' . date('Y-m-d H:i:s') . '.pdf');
     }
 }

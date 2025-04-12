@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\UserDataTable;
 use App\Models\LevelModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\DataTables;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class UserController extends Controller
 {
@@ -19,41 +21,14 @@ class UserController extends Controller
         $page = (object) [
             'title' => 'Daftar user yang terdaftar dalam sistem'
         ];
-        $activeMenu = 'user'; // set menu yang sedang aktif 
+        $activeMenu = 'user';
         $level = LevelModel::all();
         return view('user.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
-    // Ambil data user dalam bentuk json untuk datatables
-    public function list(Request $request)
+    public function list(UserDataTable $dataTable)
     {
-        $users = UserModel::select('user_id', 'username', 'nama', 'level_id')
-            ->with('level');
-
-        // Filter data berdasarkan level
-        if ($request->level_id) {
-            $users->where('level_id', $request->level_id);
-        }
-
-        return DataTables::of($users)
-            // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
-            ->addIndexColumn()
-            // ->addColumn('aksi', function ($user) { // menambahkan kolom aksi
-            //     $btn = '<a href="' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a>';
-            //     $btn .= '<a href="' . url('/user/' . $user->user_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a>';
-            //     $btn .= '<form class="d-inline-block" method="POST" action="' . url('/user/' . $user->user_id) . '">' .
-            //         csrf_field() . method_field('DELETE') .
-            //         '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
-            //     return $btn;
-            // })
-            ->addColumn('aksi', function ($user) {
-                $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
-                return $btn;
-            })
-            ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
-            ->make(true);
+        return $dataTable->render();
     }
 
     public function create()
@@ -65,8 +40,8 @@ class UserController extends Controller
         $page = (object) [
             'title' => 'Tambah user baru'
         ];
-        $level = LevelModel::all(); // ambil data level untuk ditampilkan di form 
-        $activeMenu = 'user'; // set menu yang sedang aktif 
+        $level = LevelModel::all();
+        $activeMenu = 'user';
         return view('user.create', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
@@ -80,45 +55,76 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'username' => 'required|string|min:3|unique:m_user,username',
-            'nama' => 'required|string|max: 100',
-            'password' => 'required|min:5',
-            'level_id' => 'required|integer'
-        ]);
+        $rules = [
+            'level_id' => ['required', 'integer'],
+            'username' => [
+                'required',
+                'max:20',
+                'unique:m_user,username',
+            ],
+            'nama' => ['required', 'max:100'],
+            'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'password' => ['required', 'min:5', 'max:20']
+        ];
 
-        UserModel::create([
-            'username' => $request->username,
-            'nama' => $request->nama,
-            'password' => bcrypt($request->password), // password dienkripsi sebelum disimpan 
-            'level_id' => $request->level_id
-        ]);
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $request->all();
+        if ($request->hasFile('profile_picture')) {
+            $id = UserModel::all()->max('user_id') + 1;
+            $image = $request->file('profile_picture');
+            $imageName = 'profile-' . $id . '.webp';
+            $image->storeAs('public/profile_pictures', $imageName);
+            $data['picture_path'] = 'storage/profile_pictures/' . $imageName;
+            unset($data['profile_picture']);
+        }
+
+        UserModel::create($data);
         return redirect('/user')->with('success', 'Data user berhasil disimpan');
     }
 
     public function store_ajax(Request $request)
     {
-        // cek apakah request berupa ajax
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'level_id' => 'required|integer',
-                'username' => 'required|string|min:3|unique:m_user,username',
-                'nama' => 'required|string|max:100',
-                'password' => 'required|min:6'
+                'level_id' => ['required', 'integer'],
+                'username' => [
+                    'required',
+                    'max:20',
+                    'unique:m_user,username',
+                ],
+                'nama' => ['required', 'max:100'],
+                'profile_picture' => ['nullable', 'image', 'max:2048'],
+                'password' => ['required', 'min:5', 'max:20']
             ];
 
-            // use Illuminate\Support\Facades\Validator;
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => false, // response status, false: error/gagal, true: berhasil
+                    'status' => false,
                     'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors() // pesan error validasi
+                    'msgField' => $validator->errors()
                 ]);
             }
 
-            UserModel::create($request->all());
+            $data = $request->all();
+            if ($request->hasFile('profile_picture')) {
+                $id = UserModel::all()->max('user_id') + 1;
+                $image = $request->file('profile_picture');
+                $imageName = 'profile-' . $id . '.webp';
+                $image->storeAs('public/profile_pictures', $imageName);
+                $data['picture_path'] = 'storage/profile_pictures/' . $imageName;
+                unset($data['profile_picture']);
+            }
+
+            UserModel::create($data);
 
             return response()->json([
                 'status' => true,
@@ -128,7 +134,6 @@ class UserController extends Controller
         return redirect('/');
     }
 
-    // Menampilkan detail user 
     public function show(string $id)
     {
         $user = UserModel::with('level')->find($id);
@@ -139,7 +144,7 @@ class UserController extends Controller
         $page = (object) [
             'title' => 'Detail user'
         ];
-        $activeMenu = 'user'; // set menu yang sedang aktif 
+        $activeMenu = 'user';
         return view('user.show', ['breadcrumb' => $breadcrumb, 'page' => $page, 'user' => $user, 'activeMenu' => $activeMenu]);
     }
 
@@ -150,7 +155,6 @@ class UserController extends Controller
         return view('user.show_ajax', ['user' => $user]);
     }
 
-    // Menampilkan halaman form edit user 
     public function edit(string $id)
     {
         $user =  UserModel::find($id);
@@ -162,11 +166,10 @@ class UserController extends Controller
         $page = (object) [
             'title' => 'Edit user'
         ];
-        $activeMenu = 'user'; // set menu yang sedang aktif 
+        $activeMenu = 'user';
         return view('user.edit', ['breadcrumb' => $breadcrumb, 'page' => $page, 'user' => $user, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
-    // Menampilkan halaman form edit user ajax
     public function edit_ajax(string $id)
     {
         $user = UserModel::find($id);
@@ -194,33 +197,45 @@ class UserController extends Controller
 
     public function update_ajax(Request $request, $id)
     {
-        // cek apakah request dari ajax
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'level_id' => 'required|integer',
-                'username' => 'required|max:20|unique:m_user,username,' . $id . ',user_id',
-                'nama' => 'required|max:100',
-                'password' => 'nullable|min:6|max:20'
+                'level_id' => ['required', 'integer'],
+                'username' => [
+                    'required',
+                    'max:20',
+                    'unique:m_user,username,' . $id . ',user_id'
+                ],
+                'nama' => ['required', 'max:100'],
+                'profile_picture' => ['nullable', 'image', 'max:2048'],
+                'password' => ['nullable', 'min:5', 'max:20']
             ];
 
-            // use Illuminate\Support\Facades\Validator;
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => false, // respon json, true: berhasil, false: gagal
+                    'status' => false,
                     'message' => 'Validasi gagal.',
-                    'msgField' => $validator->errors() // menunjukkan field mana yang error
+                    'msgField' => $validator->errors()
                 ]);
             }
 
             $check = UserModel::find($id);
             if ($check) {
-                if (!$request->filled('password')) { // jika password tidak diisi, maka hapus dari request
+                if (!$request->filled('password')) {
                     $request->request->remove('password');
                 }
 
-                $check->update($request->all());
+                $data = $request->all();
+                if ($request->hasFile('profile_picture')) {
+                    $image = $request->file('profile_picture');
+                    $imageName = 'profile-' . $id . '.webp';
+                    $image->storeAs('public/profile_pictures', $imageName);
+                    $data['picture_path'] = 'storage/profile_pictures/' . $imageName;
+                    unset($data['profile_picture']);
+                }
+
+                $check->update($data);
                 return response()->json([
                     'status' => true,
                     'message' => 'Data berhasil diupdate'
@@ -235,18 +250,16 @@ class UserController extends Controller
         return redirect('/');
     }
 
-    // Menghapus data user 
     public function destroy(string $id)
     {
         $check = UserModel::find($id);
-        if (!$check) { // untuk mengecek apakah data user dengan id yang dimaksud ada atau tidak 
+        if (!$check) {
             return redirect('/user')->with('error', 'Data user tidak ditemukan');
         }
         try {
-            UserModel::destroy($id); // Hapus data level 
+            UserModel::destroy($id);
             return redirect('/user')->with('success', 'Data user berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika terjadi error ketika menghapus data, redirect kembali ke halaman dengan membawa pesan error 
             return redirect('/user')->with('error', 'Data user gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
         }
     }
@@ -260,7 +273,6 @@ class UserController extends Controller
 
     public function delete_ajax(Request $request, $id)
     {
-        // cek apakah request dari ajax
         if ($request->ajax() || $request->wantsJson()) {
             $user = UserModel::find($id);
             if ($user) {
@@ -284,5 +296,103 @@ class UserController extends Controller
             }
         }
         return redirect('/');
+    }
+
+    public function import()
+    {
+        return view('user.import');
+    }
+
+    public function import_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'file_user' => ['required', 'mimes:xlsx', 'max:1024']
+            ];
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors()
+                ]);
+            }
+            $file = $request->file('file_user');
+            $reader = IOFactory::createReader('Xlsx');
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, false, true, true);
+            $insert = [];
+            if (count($data) > 1) {
+                foreach ($data as $baris => $value) {
+                    if ($baris > 1) {
+                        $insert[] = [
+                            'username' => $value['A'],
+                            'nama' => $value['B'],
+                            'level_id' => $value['C'],
+                            'created_at' => now(),
+                        ];
+                    }
+                }
+                if (count($insert) > 0) {
+                    UserModel::insertOrIgnore($insert);
+                }
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diimport'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada data yang diimport'
+                ]);
+            }
+        }
+        return redirect('/');
+    }
+
+    public function export_excel()
+    {
+        $user = UserModel::select('username', 'nama', 'level_id')
+            ->orderBy('username')
+            ->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Username');
+        $sheet->setCellValue('C1', 'Nama');
+        $sheet->setCellValue('F1', 'Level Pengguna');
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+
+        $no = 1;
+        $baris = 2;
+        foreach ($user as $key => $value) {
+            $sheet->setCellValue('A' . $baris, $no);
+            $sheet->setCellValue('B' . $baris, $value->username);
+            $sheet->setCellValue('C' . $baris, $value->nama);
+            $sheet->setCellValue('F' . $baris, $value->level_id);
+            $baris++;
+            $no++;
+        }
+
+        foreach (range('A', 'F') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $sheet->setTitle('Data User');
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data User ' . date('Y-m-d H:i:s') . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, dMY H:i:s') . 'GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+        $writer->save('php://output');
+        exit;
     }
 }

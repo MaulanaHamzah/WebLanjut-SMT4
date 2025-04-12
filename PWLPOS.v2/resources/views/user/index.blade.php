@@ -4,10 +4,17 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
-                <a class="btn btn-sm btn-primary mt-1" href="{{ url('user/create') }}">Tambah</a>
-                <button onclick="modalAction('{{ url('/user/create_ajax') }}')" class="btn btn-sm btn-success mt-1">
+                <a class="btn btn-sm btn-primary" href="{{ url('user/create') }}">Tambah</a>
+                <button onclick="modalAction('{{ url('/user/create_ajax') }}')" class="btn btn-sm btn-success">
                     Tambah Ajax
                 </button>
+                <button onclick="modalAction('{{ url('/user/import') }}')" class="btn btn-sm btn-info">
+                    Import Data
+                </button>
+                <a href="{{ url('user/export_excel') }}" class="btn btn-sm btn-primary">
+                    <i class="fa fa-file-excel"></i>
+                    Export Excel
+                </a>
             </div>
         </div>
         <div class="card-body">
@@ -73,7 +80,7 @@
                 },
                 columns: [{
                     data: "DT_RowIndex", // nomor urut dari laravel datatable addIndexColumn()
-                    className: "text-center",
+                    className: "text-center",                 
                     orderable: false,
                     searchable: false
                 }, {
@@ -93,10 +100,12 @@
                     searchable: false // searchable: true, jika ingin kolom ini bisa dicari
                 }, {
                     data: "aksi",
-                    className: "",
+                    className: "text-center",
+                    width: "195px",
                     orderable: false, // orderable: true, jika ingin kolom ini bisa diurutkan
                     searchable: false // searchable: true, jika ingin kolom ini bisa dicari
-                }]
+                }],
+                autoWidth: false,            
             });
 
             $('#level_id').on('change', function() {

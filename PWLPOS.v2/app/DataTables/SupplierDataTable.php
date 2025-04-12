@@ -2,17 +2,15 @@
 
 namespace App\DataTables;
 
-use App\Models\KategoriModel;
+use App\Models\SupplierModel;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class KategoriDataTable extends DataTable
+class SupplierDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -23,30 +21,35 @@ class KategoriDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
-            // ->addColumn('aksi', function ($kategori) {
-            //     $btn = '<a href="' . url('/kategori/' . $kategori->kategori_id) . '" class="btn btn-info btn-sm">Detail</a> ';
-            //     $btn .= '<a href="' . url('/kategori/' . $kategori->kategori_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a> ';
-            //     $btn .= '<form class="d-inline-block" method="POST" action="' . url('/kategori/' . $kategori->kategori_id) . '">' .
+            // ->addColumn('aksi', function ($supplier) { // menambahkan kolom aksi
+            //     $btn = '<a href="' . url('/supplier/' . $supplier->supplier_id) . '" class="btn btn-info btn-sm">Detail</a>';
+            //     $btn .= '<a href="' . url('/supplier/' . $supplier->supplier_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a>';
+            //     $btn .= '<form class="d-inline-block" method="POST" action="' . url('/supplier/' . $supplier->supplier_id) . '">' .
             //         csrf_field() . method_field('DELETE') .
             //         '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
             //     return $btn;
             // })
-            ->addColumn('aksi', function ($kategori) {
-                $btn = '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/kategori/' . $kategori->kategori_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
+            ->addColumn('aksi', function ($supplier) {
+                $btn = '<button onclick="modalAction(\'' . url('/supplier/' . $supplier->supplier_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/supplier/' . $supplier->supplier_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/supplier/' . $supplier->supplier_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
                 return $btn;
             })
             ->rawColumns(['aksi'])
-            ->setRowId('kategori_id');
+            ->setRowId('supplier_id');
     }
 
     /**
      * Get the query source of dataTable.
      */
-    public function query(KategoriModel $model): QueryBuilder
+    public function query(SupplierModel $model): QueryBuilder
     {
-        return $model->select('kategori_id', 'kategori_kode', 'kategori_nama');
+        return $model->select(
+            'supplier_id',
+            'supplier_kode',
+            'supplier_nama',
+            'supplier_alamat',
+        );;
     }
 
     /**
@@ -55,7 +58,7 @@ class KategoriDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('kategori-table')
+            ->setTableId('supplier-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
             //->dom('Bfrtip')
@@ -77,9 +80,10 @@ class KategoriDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('kategori_kode'),
-            Column::make('kategori_nama'),
-            Column::make('aksi')->exportable(false)->printable(false)->addClass('text-center')
+            Column::make('supplier_id'),
+            Column::make('supplier_kode'),
+            Column::make('supplier_nama'),
+            Column::make('supplier_alamat'),
         ];
     }
 
@@ -88,6 +92,6 @@ class KategoriDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Kategori_' . date('YmdHis');
+        return 'Supplier_' . date('YmdHis');
     }
 }
