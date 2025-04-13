@@ -93,26 +93,25 @@ class LevelController extends Controller
 
     public function store_ajax(Request $request)
     {
-        // cek apakah request berupa ajax
         if ($request->ajax() || $request->wantsJson()) {
+    
             $rules = [
                 'level_kode' => 'required|string|min:3|max:10|unique:m_level,level_kode',
                 'level_nama' => 'required|string|max:100'
             ];
-
-            // use Illuminate\Support\Facades\Validator;
+    
             $validator = Validator::make($request->all(), $rules);
-
+    
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => false, // response status, false: error/gagal, true: berhasil
+                    'status' => false,
                     'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors() // pesan error validasi
+                    'msgField' => $validator->errors()
                 ]);
             }
-
+    
             LevelModel::create($request->all());
-
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Data user berhasil disimpan'

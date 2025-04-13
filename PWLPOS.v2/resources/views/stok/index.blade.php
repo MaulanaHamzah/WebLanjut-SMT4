@@ -9,6 +9,17 @@
                 <button onclick="modalAction('{{ url('/stok/create_ajax') }}')" class="btn btn-sm btn-success">
                     Tambah Ajax
                 </button>
+                <button onclick="modalAction('{{ url('/stok/import') }}')" class="btn btn-sm btn-info">
+                    Import Data
+                </button>
+                <a href="{{ url('stok/export_excel') }}" class="btn btn-sm btn-primary">
+                    <i class="fa fa-file-excel"></i>
+                    Export Excel
+                </a>
+                <a href="{{ url('stok/export_pdf') }}" class="btn btn-sm btn-warning">
+                    <i class="fa fa-file-pdf"></i>
+                    Export PDF
+                </a>
             </div>
         </div>
         <div class="card-body">
@@ -25,7 +36,7 @@
                         <th>No</th>
                         <th>Id Barang</th>
                         <th>Nama Barang</th>
-                        <th>Id User</th>
+                        <th>Id Supplier</th>
                         <th>Stok Tanggal</th>
                         <th>Stok Jumlah</th>
                         <th>Aksi</th>
@@ -77,7 +88,7 @@
                         searchable: true
                     },
                     {
-                        data: "user_id",
+                        data: "supplier_id",
                         className: "",
                         orderable: true,
                         searchable: true

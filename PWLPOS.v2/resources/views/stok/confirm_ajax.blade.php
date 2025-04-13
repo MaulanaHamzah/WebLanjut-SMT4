@@ -34,32 +34,7 @@
                         <h5><i class="icon fas fa-ban"></i> Konfirmasi !!!</h5>
                         Apakah Anda ingin menghapus data seperti di bawah ini?
                     </div>
-                    <table class="table table-bordered table-striped table-hover table-sm">
-                        <tr>
-                            <th>ID Stok</th>
-                            <td>{{ $stok->stok_id }}</td>
-                        </tr>
-                        <tr>
-                            <th>ID Barang</th>
-                            <td>{{ $stok->barang_id }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nama Barang</th>
-                            <td>{{ $stok->barang->barang_nama }}</td>
-                        </tr>
-                        <tr>
-                            <th>ID User</th>
-                            <td>{{ $stok->user_id }}</td>
-                        </tr>
-                        <tr>
-                            <th>Stok Tanggal</th>
-                            <td>{{ $stok->stok_tanggal }}</td>
-                        </tr>
-                        <tr>
-                            <th>Stok Jumlah</th>
-                            <td>{{ $stok->stok_jumlah }}</td>
-                        </tr>
-                    </table>
+                    @include('stok.show_component')
                 </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-default">Batal</button>
@@ -85,7 +60,7 @@
                                     title: 'Berhasil',
                                     text: response.message
                                 });
-                                dataUser.ajax.reload();
+                                dataUser.ajax.reload(null, false);
                             } else {
                                 $('.error-text').text('');
                                 $.each(response.msgField, function(prefix, val) {

@@ -90,6 +90,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
         Route::get('/user/import', [UserController::class, 'import']);
         Route::post('/user/import_ajax', [UserController::class, 'import_ajax']);
         Route::get('/user/export_excel', [UserController::class, 'export_excel']);
+        Route::get('/user/export_pdf', [UserController::class, 'export_pdf']);
     });
     Route::middleware(['authorize:ADM,MNG,STF,NEW'])->group(function () {
         Route::get('/user/{id}/edit_ajax', [UserController::class, 'edit_ajax']);
@@ -115,6 +116,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
         Route::get('/kategori/import', [KategoriController::class, 'import']);
         Route::post('/kategori/import_ajax', [KategoriController::class, 'import_ajax']);
         Route::get('/kategori/export_excel', [KategoriController::class, 'export_excel']);
+        Route::get('/kategori/export_pdf', [KategoriController::class, 'export_pdf']);
     });
 
     Route::middleware(['authorize:ADM,MNG'])->group(function () {
@@ -136,6 +138,8 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
         Route::get('/supplier/import', [SupplierController::class, 'import']);
         Route::post('/supplier/import_ajax', [SupplierController::class, 'import_ajax']);
         Route::get('/supplier/export_excel', [SupplierController::class, 'export_excel']);
+        Route::get('/supplier/export_pdf', [SupplierController::class, 'export_pdf']);
+        
     });
 
     Route::middleware(['authorize:ADM,MNG,STF'])->group(function () {
@@ -157,6 +161,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
         Route::get('/stok/import', [StokController::class, 'import']);
         Route::post('/stok/import_ajax', [StokController::class, 'import_ajax']);
         Route::get('/stok/export_excel', [StokController::class, 'export_excel']);
+        Route::get('/stok/export_pdf', [StokController::class, 'export_pdf']);
     });
 
     Route::middleware(['authorize:ADM,MNG,STF'])->group(function () {

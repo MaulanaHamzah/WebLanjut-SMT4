@@ -16,6 +16,10 @@
                     <i class="fa fa-file-excel"></i>
                     Export Excel
                 </a>
+                <a href="{{ url('supplier/export_pdf') }}" class="btn btn-sm btn-warning">
+                    <i class="fa fa-file-pdf"></i>
+                    Export PDF
+                </a>
             </div>
         </div>
         <div class="card-body">

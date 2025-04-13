@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KategoriController extends Controller
 {
@@ -353,5 +354,25 @@ class KategoriController extends Controller
         header('Pragma: public');
         $writer->save('php://output');
         exit;
+    }
+
+    public function export_pdf()
+    {
+        // Ambil data kategori yang ingin diexport
+        $kategori = KategoriModel::select('kategori_kode', 'kategori_nama')
+            ->orderBy('kategori_kode')
+            ->get();
+
+        // Load tampilan dengan data kategori
+        $pdf = Pdf::loadView('kategori.export_pdf', ['kategori' => $kategori]);
+
+        // Set ukuran kertas dan orientasi
+        $pdf->setPaper('a4', 'portrait');
+
+        // Opsi jika ada gambar dari URL
+        $pdf->setOption("isRemoteEnabled", true);
+
+        // Render PDF dan langsung tampilkan
+        return $pdf->stream('Data Kategori ' . date('Y-m-d H:i:s') . '.pdf');
     }
 }

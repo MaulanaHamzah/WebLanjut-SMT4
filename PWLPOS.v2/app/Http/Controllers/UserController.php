@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class UserController extends Controller
 {
@@ -399,5 +400,21 @@ class UserController extends Controller
         header('Pragma: public');
         $writer->save('php://output');
         exit;
+    }
+
+    public function export_pdf()
+    {
+        $user = UserModel::select('username', 'nama', 'level_id')
+            ->with('level') // relasi ke level, untuk ambil level_nama
+            ->orderBy('level_id')
+            ->orderBy('username')
+            ->get();
+
+        $pdf = Pdf::loadView('user.export_pdf', ['user' => $user]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption("isRemoteEnabled", true);
+        $pdf->render();
+
+        return $pdf->stream('Data User ' . date('Y-m-d H:i:s') . '.pdf');
     }
 }
