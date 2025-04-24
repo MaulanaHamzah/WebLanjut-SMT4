@@ -215,3 +215,21 @@ Membuat request delete pada api/levels/{id} dengan responsnya
 
 # TUGAS
 Implementasikan CRUD API pada tabel lainnya yaitu tabel m_user, m_kategori, dan m_barang
+
+1. m_user
+
+<img src="image/t1.1.png">
+
+<img src="image/t1.2.png">
+
+2. m_kategori
+
+<img src="image/t2.1.png">
+
+<img src="image/t2.2.png">
+
+3. m_barang
+
+<img src="image/t3.1.png">
+
+<img src="image/t3.2.png">
