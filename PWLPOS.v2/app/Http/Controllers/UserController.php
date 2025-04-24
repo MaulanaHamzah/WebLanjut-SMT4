@@ -196,7 +196,7 @@ class UserController extends Controller
             'username' => $request->username,
             'nama' => $request->nama,
             'password' => $request->password ? bcrypt($request->password) : UserModel::find($id)->password,
-            'level_id' => $request->level_id
+            'level_id' => $request->level_id,
         ]);
         return redirect('/user')->with('success', 'Data user berhasil diubah');
     }
@@ -236,8 +236,8 @@ class UserController extends Controller
                 if ($request->hasFile('profile_picture')) {
                     $image = $request->file('profile_picture');
                     $imageName = 'profile-' . $id . '.webp';
-                    $image->storeAs('public/profile_pictures', $imageName);
-                    $data['picture_path'] = 'storage/profile_pictures/' . $imageName;
+                    $image->move('profile_pictures', $imageName);
+                    $data['picture_path'] = 'profile_pictures/' . $imageName;
                     unset($data['profile_picture']);
                 }
 

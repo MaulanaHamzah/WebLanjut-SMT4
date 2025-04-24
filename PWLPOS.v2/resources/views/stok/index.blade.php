@@ -97,7 +97,13 @@
                         data: "stok_tanggal",
                         className: "",
                         orderable: true,
-                        searchable: false
+                        searchable: false,
+                        render: function(data, type, row) {
+                            // data = '2025-04-14'
+                            const tanggal = new Date(data);
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            return tanggal.toLocaleDateString('id-ID', options);
+                        }
                     },
                     {
                         data: "stok_jumlah",
