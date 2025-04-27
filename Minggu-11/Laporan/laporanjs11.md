@@ -54,4 +54,17 @@ http://127.0.0.1:8000/api/register1 dengan method POST dan klik send
 <img src="image/p1.9.png">
 
 10. Pada Controllers/Api/RegisterController bagian create user ganti dengan
-11. Uji coba dan screenshot hasilnya apa perbedaan dari yang sebelumnya
+11. Uji coba dan screenshot hasilnya apa perbedaan dari yang sebelumnya4
+
+# TUGAS
+Implementasikan API untuk upload file/gambar pada tabel lainnya yaitu tabel m_barang dan
+gunakan pada transaksi. Uji coba dengan method GET untuk memanggil data yang sudah di
+inputkan.
+
+<img src="image/t1.1.png">
+
+<img src="image/t1.2.png">
+
+<img src="image/t1.3.png">
+
+<img src="image/t1.4.png">
